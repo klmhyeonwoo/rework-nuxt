@@ -47,7 +47,10 @@ const cells = computed<Cell[]>(() => {
 
   const cur = new Date(start)
   while (cur <= end) {
-    const dateStr = cur.toISOString().split('T')[0]
+    const y = cur.getFullYear()
+    const m = String(cur.getMonth() + 1).padStart(2, '0')
+    const d = String(cur.getDate()).padStart(2, '0')
+    const dateStr = `${y}-${m}-${d}`
     const entry = props.data[dateStr]
     result.push({
       date: dateStr,
