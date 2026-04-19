@@ -1,0 +1,21 @@
+:root {
+  // Color
+  --color-primary: #222222;
+  --color-bg: #ffffff;
+  --color-border: #e0e0e0;
+  --color-text-muted: #888888;
+
+  // Button
+  --btn-bg: #222222;
+  --btn-color: #ffffff;
+  --btn-border-radius: 4px;
+  --btn-padding: 8px 16px;
+  --btn-font-size: 14px;
+
+  // Heatmap levels (5단계 채도)
+  --heatmap-0: #eeeeee;
+  --heatmap-1: #c6d9c6;
+  --heatmap-2: #7fb87f;
+  --heatmap-3: #3d8f3d;
+  --heatmap-4: #1a6e1a;
+}
