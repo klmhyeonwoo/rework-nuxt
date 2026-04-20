@@ -50,4 +50,22 @@ button {
     "Segoe UI Symbol",
     sans-serif;
 }
+
+button {
+  padding: 8px 16px;
+  background: none;
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--color-text-muted, #888);
+  transition:
+    border-color 0.4s,
+    color 0.4s;
+
+  &:hover {
+    border-color: var(--color-primary, #222);
+    color: var(--color-primary, #222);
+  }
+}
 </style>
