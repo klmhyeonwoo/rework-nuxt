@@ -18,18 +18,33 @@
 
       <main class="content">
         <section class="section">
-          <h2 class="section-title">오늘의 할 일</h2>
+          <div class="section-header">
+            <h2 class="section-title">할 일</h2>
+            <span v-if="!isToday" class="section-date">
+              {{ selectedDate }} — 오늘 날짜가 아닙니다
+            </span>
+          </div>
           <TodoList />
         </section>
 
         <section class="section">
-          <h2 class="section-title">오늘의 일기</h2>
+          <div class="section-header">
+            <h2 class="section-title">일기</h2>
+            <span v-if="!isToday" class="section-date">
+              {{ selectedDate }} — 오늘 날짜가 아닙니다
+            </span>
+          </div>
           <DiaryEditor />
         </section>
 
         <section class="section">
           <h2 class="section-title">활동 기록</h2>
-          <ActivityHeatmap :year="currentYear" :data="heatmap.data.value" />
+          <ActivityHeatmap
+            :year="currentYear"
+            :data="heatmap.data.value"
+            :selected-date="selectedDate"
+            @select="onSelectDate"
+          />
         </section>
       </main>
     </div>
@@ -49,6 +64,17 @@ const heatmap = useHeatmap();
 const currentYear = new Date().getFullYear();
 const now = new Date();
 const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+const selectedDate = ref(today);
+const isToday = computed(() => selectedDate.value === today);
+
+async function onSelectDate(date: string) {
+  selectedDate.value = date;
+  await Promise.all([
+    todoStore.fetchTodos(date),
+    diaryStore.fetchDiary(date),
+  ]);
+}
 
 await Promise.all([
   auth.fetchMe(),
@@ -113,10 +139,21 @@ watch(
   flex-direction: column;
   row-gap: 16px;
 
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
   .section-title {
     font-size: 16px;
     font-weight: 600;
     margin: 0;
+  }
+
+  .section-date {
+    font-size: 12px;
+    color: var(--color-text-muted, #888);
   }
 }
 </style>

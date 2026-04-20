@@ -5,10 +5,11 @@
         v-for="cell in cells"
         :key="cell.date"
         class="heatmap__cell"
-        :class="`heatmap__cell--level-${cell.level}`"
+        :class="[`heatmap__cell--level-${cell.level}`, { 'heatmap__cell--selected': cell.date === selectedDate }]"
         :aria-label="`${cell.date} ${cell.achievementRate === null ? '기록 없음' : cell.achievementRate + '%'}`"
         @mouseenter="onEnter($event, cell)"
         @mouseleave="onLeave"
+        @click="emit('select', cell.date)"
       />
     </div>
 
@@ -28,7 +29,10 @@ const props = defineProps<{
   year: number
   month?: number
   data: HeatmapData
+  selectedDate?: string
 }>()
+
+const emit = defineEmits<{ select: [date: string] }>()
 
 type Cell = {
   date: string
@@ -105,6 +109,11 @@ function onLeave() {
 
     &:hover {
       outline: 1px solid var(--color-primary);
+      outline-offset: 1px;
+    }
+
+    &--selected {
+      outline: 2px solid var(--color-primary);
       outline-offset: 1px;
     }
   }
