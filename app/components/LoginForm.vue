@@ -24,31 +24,31 @@
       </div>
       <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
       <button type="submit" class="submit-button" :disabled="isPending">
-        {{ isPending ? '로그인 중...' : '로그인' }}
+        {{ isPending ? "로그인 중..." : "로그인" }}
       </button>
     </form>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from '~/stores/auth'
+import { useAuthStore } from "~/stores/auth";
 
-const auth = useAuthStore()
-const email = ref('')
-const password = ref('')
-const errorMessage = ref('')
-const isPending = ref(false)
+const auth = useAuthStore();
+const email = ref("");
+const password = ref("");
+const errorMessage = ref("");
+const isPending = ref(false);
 
 async function handleLogin() {
-  errorMessage.value = ''
-  isPending.value = true
+  errorMessage.value = "";
+  isPending.value = true;
   try {
-    await auth.login(email.value, password.value)
-    await navigateTo('/')
+    await auth.login(email.value, password.value);
+    await navigateTo("/");
   } catch (e: any) {
-    errorMessage.value = e?.data?.message ?? '로그인에 실패했습니다.'
+    errorMessage.value = e?.data?.message ?? "로그인에 실패했습니다.";
   } finally {
-    isPending.value = false
+    isPending.value = false;
   }
 }
 </script>
@@ -76,12 +76,13 @@ async function handleLogin() {
   .field {
     .input {
       width: 100%;
-      padding: 12px;
+      padding: 15px 12px;
       border: 1px solid var(--color-border, #e0e0e0);
       border-radius: 6px;
       font-size: 14px;
       outline: none;
       box-sizing: border-box;
+      transition: border-color 0.4s;
 
       &:focus {
         border-color: var(--color-primary, #222);

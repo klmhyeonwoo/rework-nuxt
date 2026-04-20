@@ -1,5 +1,6 @@
 <template>
   <div class="diary-editor">
+    <CircleLoading v-if="store.isLoading.read" />
     <textarea
       v-model="content"
       class="textarea"
@@ -30,12 +31,13 @@
 </template>
 
 <script setup lang="ts">
+import CircleLoading from "~/assets/icon/CircleLoading.vue";
 import { useDiaryStore } from "~/stores/diary";
 
 const store = useDiaryStore();
 const auth = useAuthStore();
-const content = ref(store.diary?.content ?? "");
 const isEditing = ref(!store.diary);
+const content = ref(store.diary?.content);
 
 watch(
   () => store.diary,
@@ -65,9 +67,16 @@ function cancelEdit() {
 
 <style scoped lang="scss">
 .diary-editor {
+  position: relative;
   display: flex;
   flex-direction: column;
   row-gap: 12px;
+
+  .circle-loading {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+  }
 
   .textarea {
     width: 100%;

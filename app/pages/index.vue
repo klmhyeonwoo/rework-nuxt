@@ -63,20 +63,20 @@ const heatmap = useHeatmap();
 
 const currentYear = new Date().getFullYear();
 const now = new Date();
-const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
 const selectedDate = ref(today);
 const isToday = computed(() => selectedDate.value === today);
 
 async function onSelectDate(date: string) {
   selectedDate.value = date;
-  await Promise.all([
+  await Promise.allSettled([
     todoStore.fetchTodos(date),
     diaryStore.fetchDiary(date),
   ]);
 }
 
-await Promise.all([
+await Promise.allSettled([
   auth.fetchMe(),
   todoStore.fetchTodos(today),
   diaryStore.fetchDiary(today),
