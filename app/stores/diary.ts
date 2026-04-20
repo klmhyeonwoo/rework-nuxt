@@ -19,6 +19,12 @@ export interface Diary {
 export const useDiaryStore = defineStore("diary", () => {
   const diary = ref<Diary | null>(null);
   const currentDate = ref(new Date().toISOString().split("T")[0]);
+  const isLoading = reactive({
+    create: false,
+    read: false,
+    update: false,
+    delete: false,
+  });
 
   /**
    * 특정 날짜의 일기를 서버에서 불러온다.
@@ -29,9 +35,12 @@ export const useDiaryStore = defineStore("diary", () => {
   async function fetchDiary(date: string) {
     currentDate.value = date;
     try {
+      isLoading.read = true;
       diary.value = await $fetch<Diary | null>(`/api/diaries?date=${date}`);
     } catch {
       diary.value = null;
+    } finally {
+      isLoading.read = false;
     }
   }
 
@@ -42,16 +51,24 @@ export const useDiaryStore = defineStore("diary", () => {
    * @throws 동일 날짜 일기가 이미 존재하면 409, 인증 실패 시 401
    */
   async function saveDiary(content: string) {
-    if (diary.value) {
-      diary.value = await $fetch<Diary>(`/api/diaries/${diary.value.id}`, {
-        method: "PATCH",
-        body: { content },
-      });
-    } else {
-      diary.value = await $fetch<Diary>("/api/diaries", {
-        method: "POST",
-        body: { content, date: currentDate.value },
-      });
+    const isUpdate = !!diary.value;
+    try {
+      isLoading[isUpdate ? "update" : "create"] = true;
+      if (isUpdate) {
+        diary.value = await $fetch<Diary>(`/api/diaries/${diary.value!.id}`, {
+          method: "PATCH",
+          body: { content },
+        });
+      } else {
+        diary.value = await $fetch<Diary>("/api/diaries", {
+          method: "POST",
+          body: { content, date: currentDate.value },
+        });
+      }
+    } catch (e) {
+      throw e;
+    } finally {
+      isLoading[isUpdate ? "update" : "create"] = false;
     }
   }
 
@@ -61,9 +78,16 @@ export const useDiaryStore = defineStore("diary", () => {
    */
   async function deleteDiary() {
     if (!diary.value) return;
-    await $fetch(`/api/diaries/${diary.value.id}`, { method: "DELETE" });
-    diary.value = null;
+    try {
+      isLoading.delete = true;
+      await $fetch(`/api/diaries/${diary.value.id}`, { method: "DELETE" });
+      diary.value = null;
+    } catch (e) {
+      throw e;
+    } finally {
+      isLoading.delete = false;
+    }
   }
 
-  return { diary, currentDate, fetchDiary, saveDiary, deleteDiary };
+  return { diary, currentDate, fetchDiary, saveDiary, deleteDiary, isLoading };
 });
