@@ -68,4 +68,14 @@ button {
     color: var(--color-primary, #222);
   }
 }
+
+a {
+  color: #222;
+  text-underline-offset: 3px;
+  transition: color 0.4s;
+
+  &:hover {
+    color: #0062ff;
+  }
+}
 </style>

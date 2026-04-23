@@ -1,94 +1,14 @@
 <template>
   <div>
     <div class="main">
-      <aside class="sidebar">
-        <Profile
-          src="https://upload.cafenono.com/image/slashpageUser/20251203/173005_3JvNgOKRKxsx7CSg2i?q=80&s=480x1&t=outside&f=webp"
-          name="현도리"
-          description="오늘도 화이팅"
-        />
-        <button
-          v-if="auth.isLoggedIn"
-          class="logout-button"
-          @click="auth.logout()"
-        >
-          로그아웃
-        </button>
-      </aside>
-
-      <main class="content">
-        <section class="section">
-          <div class="section-header">
-            <h2 class="section-title">할 일</h2>
-            <span v-if="!isToday" class="section-date">
-              {{ selectedDate }} — 오늘 날짜가 아닙니다
-            </span>
-          </div>
-          <TodoList />
-        </section>
-
-        <section class="section">
-          <div class="section-header">
-            <h2 class="section-title">일기</h2>
-            <span v-if="!isToday" class="section-date">
-              {{ selectedDate }} — 오늘 날짜가 아닙니다
-            </span>
-          </div>
-          <DiaryEditor />
-        </section>
-
-        <section class="section">
-          <h2 class="section-title">활동 기록</h2>
-          <ActivityHeatmap
-            :year="currentYear"
-            :data="heatmap.data.value"
-            :selected-date="selectedDate"
-            @select="onSelectDate"
-          />
-        </section>
-      </main>
+      <span> 오늘 하루도 멋진 당신을 위해 </span>
+      <NuxtLink :href="path.login()"> 우리, 행복합시다. </NuxtLink>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from "~/stores/auth";
-import { useTodoStore } from "~/stores/todo";
-import { useDiaryStore } from "~/stores/diary";
-
-const auth = useAuthStore();
-const todoStore = useTodoStore();
-const diaryStore = useDiaryStore();
-const heatmap = useHeatmap();
-
-const currentYear = new Date().getFullYear();
-const now = new Date();
-const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-
-const selectedDate = ref(today);
-const isToday = computed(() => selectedDate.value === today);
-
-async function onSelectDate(date: string) {
-  selectedDate.value = date;
-  await Promise.allSettled([
-    todoStore.fetchTodos(date),
-    diaryStore.fetchDiary(date),
-  ]);
-}
-
-await Promise.allSettled([
-  auth.fetchMe(),
-  todoStore.fetchTodos(today),
-  diaryStore.fetchDiary(today),
-  heatmap.fetch(currentYear),
-]);
-
-watch(
-  () => todoStore.lastSyncedAt,
-  () => {
-    heatmap.fetch(currentYear);
-  },
-);
+import path from "~/constants/path";
 </script>
 
 <style scoped lang="scss">

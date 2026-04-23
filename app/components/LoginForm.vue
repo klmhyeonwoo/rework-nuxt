@@ -31,6 +31,7 @@
 </template>
 
 <script setup lang="ts">
+import path from "~/constants/path";
 import { useAuthStore } from "~/stores/auth";
 
 const auth = useAuthStore();
@@ -44,7 +45,8 @@ async function handleLogin() {
   isPending.value = true;
   try {
     await auth.login(email.value, password.value);
-    await navigateTo("/");
+    const userId = auth.user!.id;
+    navigateTo(path.user(userId));
   } catch (e: any) {
     errorMessage.value = e?.data?.message ?? "로그인에 실패했습니다.";
   } finally {
