@@ -6,10 +6,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: '이메일과 비밀번호를 입력해주세요.' })
   }
 
-  if (email !== config.allowedEmail || password !== config.allowedPassword) {
-    throw createError({ statusCode: 401, message: '허용되지 않은 계정입니다.' })
-  }
-
   const supabase = useSupabaseAdmin()
   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
@@ -32,10 +28,19 @@ export default defineEventHandler(async (event) => {
     path: '/',
   })
 
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('nickname, bio')
+    .eq('user_id', data.user!.id)
+    .maybeSingle()
+
   return {
     user: {
       id: data.user!.id,
       email: data.user!.email,
+      avatar_url: data.user!.user_metadata?.avatar_url ?? null,
+      nickname: profile?.nickname ?? null,
+      bio: profile?.bio ?? null,
     },
   }
 })

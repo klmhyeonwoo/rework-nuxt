@@ -1,18 +1,24 @@
-import { defineStore } from 'pinia'
+import { defineStore } from "pinia";
 
 /**
  * 인증된 사용자 정보
  */
 interface AuthUser {
-  /** Supabase Auth 사용자 ID */
-  id: string
+  /** 사용자 ID (Supabase Auth) */
+  id: string;
   /** 이메일 주소 */
-  email: string
+  email: string;
+  /** 프로필 이미지*/
+  avatar_url: string | null;
+  /** 닉네임 */
+  nickname: string | null;
+  /** 소개 */
+  bio: string | null;
 }
 
-export const useAuthStore = defineStore('auth', () => {
-  const user = ref<AuthUser | null>(null)
-  const isLoggedIn = computed(() => user.value !== null)
+export const useAuthStore = defineStore("auth", () => {
+  const user = ref<AuthUser | null>(null);
+  const isLoggedIn = computed(() => user.value !== null);
 
   /**
    * 이메일·비밀번호로 로그인한다.
@@ -23,19 +29,19 @@ export const useAuthStore = defineStore('auth', () => {
    * @throws 허용되지 않은 계정이거나 Supabase 인증 실패 시 401
    */
   async function login(email: string, password: string) {
-    const data = await $fetch<{ user: AuthUser }>('/api/auth/login', {
-      method: 'POST',
+    const data = await $fetch<{ user: AuthUser }>("/api/auth/login", {
+      method: "POST",
       body: { email, password },
-    })
-    user.value = data.user
+    });
+    user.value = data.user;
   }
 
   /**
    * 로그아웃한다. 서버에서 세션 쿠키를 삭제한다.
    */
   async function logout() {
-    await $fetch('/api/auth/logout', { method: 'POST' })
-    user.value = null
+    await $fetch("/api/auth/logout", { method: "POST" });
+    user.value = null;
   }
 
   /**
@@ -44,12 +50,12 @@ export const useAuthStore = defineStore('auth', () => {
    */
   async function fetchMe() {
     try {
-      const data = await $fetch<{ user: AuthUser }>('/api/auth/me')
-      user.value = data.user
+      const data = await $fetch<{ user: AuthUser }>("/api/auth/me");
+      user.value = data.user;
     } catch {
-      user.value = null
+      user.value = null;
     }
   }
 
-  return { user, isLoggedIn, login, logout, fetchMe }
-})
+  return { user, isLoggedIn, login, logout, fetchMe };
+});

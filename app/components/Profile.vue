@@ -13,7 +13,7 @@ const props = withDefaults(
   defineProps<{
     src: string;
     name: string;
-    description?: string;
+    description?: string | null;
   }>(),
   {
     src: "",
