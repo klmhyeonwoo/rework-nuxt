@@ -5,9 +5,9 @@
       v-model="content"
       class="textarea"
       placeholder="오늘 하루를 기록하세요"
-      :disabled="!isEditing"
+      :disabled="!isOwner || !isEditing"
     />
-    <div class="actions" v-if="auth.isLoggedIn">
+    <div class="actions" v-if="isOwner">
       <template v-if="store.diary && !isEditing">
         <button class="button button--secondary" @click="isEditing = true">
           수정
@@ -34,8 +34,9 @@
 import CircleLoading from "~/assets/icon/CircleLoading.vue";
 import { useDiaryStore } from "~/stores/diary";
 
+const props = defineProps<{ isOwner: boolean }>();
+const { isOwner } = toRefs(props);
 const store = useDiaryStore();
-const auth = useAuthStore();
 const isEditing = ref(!store.diary);
 const content = ref(store.diary?.content);
 

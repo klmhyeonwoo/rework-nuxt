@@ -1,7 +1,7 @@
 <template>
   <div class="todo-list">
     <CircleLoading v-if="store.isLoading.read" />
-    <div class="input-row" v-if="auth.isLoggedIn">
+    <div class="input-row" v-if="isOwner">
       <input
         v-model="inputValue"
         class="input"
@@ -40,7 +40,7 @@
         <button
           class="delete-button"
           @click="store.deleteTodo(todo.id)"
-          v-if="auth.isLoggedIn"
+          v-if="isOwner"
         >
           ✕
         </button>
@@ -53,7 +53,8 @@
 import CircleLoading from "~/assets/icon/CircleLoading.vue";
 import { useTodoStore, type Todo } from "~/stores/todo";
 
-const auth = useAuthStore();
+const props = defineProps<{ isOwner: boolean }>();
+const { isOwner } = toRefs(props);
 const store = useTodoStore();
 const inputValue = ref("");
 
