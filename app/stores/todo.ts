@@ -33,15 +33,16 @@ export const useTodoStore = defineStore("todo", () => {
    * 특정 날짜의 투두 목록과 달성률을 서버에서 불러온다.
    *
    * @param date - 조회할 날짜 (YYYY-MM-DD)
+   * @param uid - 사용자 ID
    */
-  async function fetchTodos(date: string) {
+  async function fetchTodos({ date, uid }: { date: string; uid: string }) {
     currentDate.value = date;
     try {
       isLoading.read = true;
       const data = await $fetch<{
         todos: Todo[];
         achievement_rate: number | null;
-      }>(`/api/todos?date=${date}`);
+      }>(`/api/${uid}/todos?date=${date}`);
       todos.value = data.todos;
       achievementRate.value = data.achievement_rate;
     } catch (e) {

@@ -31,12 +31,15 @@ export const useDiaryStore = defineStore("diary", () => {
    * 일기가 없거나 요청 실패 시 null로 초기화한다.
    *
    * @param date - 조회할 날짜 (YYYY-MM-DD)
+   * @param uid - 사용자 ID
    */
-  async function fetchDiary(date: string) {
+  async function fetchDiary({ date, uid }: { date: string; uid: string }) {
     currentDate.value = date;
     try {
       isLoading.read = true;
-      diary.value = await $fetch<Diary | null>(`/api/diaries?date=${date}`);
+      diary.value = await $fetch<Diary | null>(
+        `/api/${uid}/diaries?date=${date}`,
+      );
     } catch {
       diary.value = null;
     } finally {

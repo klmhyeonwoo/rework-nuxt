@@ -1,4 +1,5 @@
 export default defineEventHandler(async (event) => {
+  const uid = getRouterParam(event, 'uid')
   const { date } = getQuery(event) as { date?: string }
 
   if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
@@ -7,12 +8,18 @@ export default defineEventHandler(async (event) => {
 
   const supabase = useSupabaseAdmin()
   const { data, error } = await supabase
-    .from('diaries')
+    .from('todos')
     .select('*')
+    .eq('user_id', uid)
     .eq('date', date)
-    .maybeSingle()
+    .order('created_at', { ascending: true })
 
   if (error) throw createError({ statusCode: 500, message: error.message })
 
-  return data ?? null
+  const todos = data ?? []
+  const total = todos.length
+  const completed = todos.filter((t) => t.is_completed).length
+  const achievementRate = total === 0 ? null : Math.floor((completed / total) * 100)
+
+  return { date, achievement_rate: achievementRate, todos }
 })

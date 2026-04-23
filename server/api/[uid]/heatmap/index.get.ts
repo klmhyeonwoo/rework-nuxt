@@ -12,6 +12,7 @@ function toLevel(rate: number): 0 | 1 | 2 | 3 | 4 {
 }
 
 export default defineEventHandler(async (event) => {
+  const uid = getRouterParam(event, 'uid')
   const { year, month } = getQuery(event) as { year?: string; month?: string }
 
   if (!year || !/^\d{4}$/.test(year)) {
@@ -39,6 +40,7 @@ export default defineEventHandler(async (event) => {
   const { data, error } = await supabase
     .from('todos')
     .select('date, is_completed')
+    .eq('user_id', uid)
     .gte('date', from)
     .lte('date', to)
 
