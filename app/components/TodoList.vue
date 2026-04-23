@@ -99,8 +99,8 @@ async function handleAdd() {
 
     .add-button {
       padding: 12px 16px;
-      background: var(--color-primary, #222);
-      color: #fff;
+      background: var(--btn-bg, #222);
+      color: var(--btn-color, #fff);
       border: none;
       border-radius: 6px;
       font-size: 14px;

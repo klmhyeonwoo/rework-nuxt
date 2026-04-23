@@ -29,6 +29,14 @@
   font-display: swap;
 }
 
+body {
+  background-color: var(--color-bg);
+  color: var(--color-primary);
+  transition:
+    background-color 0.3s,
+    color 0.3s;
+}
+
 body,
 input,
 textarea,
@@ -70,7 +78,7 @@ button {
 }
 
 a {
-  color: #222;
+  color: var(--color-primary);
   text-underline-offset: 3px;
   transition: color 0.4s;
 

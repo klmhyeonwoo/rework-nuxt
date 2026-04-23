@@ -97,7 +97,7 @@ function cancelEdit() {
     }
 
     &:disabled {
-      background: #fafafa;
+      background: var(--color-bg);
       color: var(--color-primary, #222);
       cursor: default;
     }
@@ -111,7 +111,7 @@ function cancelEdit() {
     .button {
       padding: var(--btn-padding, 8px 16px);
       border-radius: var(--btn-border-radius, 4px);
-      font-size: 14px;
+      font-size: var(--btn-font-size, 14px);
       border: none;
       cursor: pointer;
 
@@ -121,13 +121,13 @@ function cancelEdit() {
       }
 
       &--secondary {
-        background: #fff;
+        background: var(--color-bg);
         color: var(--color-primary, #222);
         border: 1px solid var(--color-border, #e0e0e0);
       }
 
       &--danger {
-        background: #fff;
+        background: var(--color-bg);
         color: #e53935;
         border: 1px solid #e53935;
       }

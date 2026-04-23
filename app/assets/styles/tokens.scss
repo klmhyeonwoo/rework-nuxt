@@ -1,4 +1,6 @@
 :root {
+  color-scheme: light;
+
   // Color
   --color-primary: #222222;
   --color-bg: #ffffff;
@@ -9,8 +11,8 @@
   --btn-bg: #222222;
   --btn-color: #ffffff;
   --btn-border-radius: 8px;
-  --btn-padding: 16px;
-  --btn-font-size: 15px;
+  --btn-padding: 10px 15px;
+  --btn-font-size: 13px;
 
   // Heatmap levels (5단계 채도)
   --heatmap-0: #eeeeee;
@@ -18,4 +20,22 @@
   --heatmap-2: #7fb87f;
   --heatmap-3: #3d8f3d;
   --heatmap-4: #1a6e1a;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-primary: #eeeeee;
+  --color-bg: #222;
+  --color-border: #797777;
+  --color-text-muted: #666666;
+
+  --btn-bg: #eeeeee;
+  --btn-color: #111111;
+
+  --heatmap-0: #373636;
+  --heatmap-1: #1a3d1a;
+  --heatmap-2: #2d6b2d;
+  --heatmap-3: #3d8f3d;
+  --heatmap-4: #4db84d;
 }
