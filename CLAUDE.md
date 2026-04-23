@@ -13,7 +13,7 @@
 
 개인 생산성 앱. 투두 관리 + 깃허브 잔디 스타일 히트맵 + 오늘의 일기를 하나의 공간에서 제공한다.
 
-**단일 사용자** — 환경변수(`ALLOWED_EMAIL`)에 등록된 계정만 쓰기 가능. 조회는 비로그인 허용.
+**다중 사용자** — Supabase Auth 계정별 독립 공간. 조회는 UID 기반 공개 접근 허용, 쓰기는 로그인 필요.
 
 ### 기술 스택
 
@@ -42,9 +42,12 @@ app/
     auth.ts
 server/
   api/
-    todos/
-    diaries/
-    heatmap/
+    [uid]/
+      todos/              # GET - 공개 (UID 기반 조회)
+      diaries/            # GET - 공개 (UID 기반 조회)
+      heatmap/            # GET - 공개 (UID 기반 조회)
+    todos/                # POST/PATCH/DELETE - 인증 필요
+    diaries/              # POST/PATCH/DELETE - 인증 필요
     auth/
   middleware/
     auth.ts               # 쓰기 요청 인증 검증
@@ -112,7 +115,7 @@ style: 스타일/포맷 변경
 
 ### Supabase
 
-- RLS는 SELECT 공개, INSERT/UPDATE/DELETE는 `auth.uid() IS NOT NULL` 또는 `auth.uid() = user_id` 조건.
+- RLS는 SELECT 공개(`USING (true)`), INSERT는 `auth.uid() IS NOT NULL`, UPDATE/DELETE는 `auth.uid() = user_id` 조건.
 - 서비스 키(`SUPABASE_SERVICE_KEY`)는 RLS 우회 목적으로만 사용하며 반드시 서버에서만 호출한다.
 
 ---
@@ -124,5 +127,3 @@ style: 스타일/포맷 변경
 | `SUPABASE_URL` | Supabase 프로젝트 URL |
 | `SUPABASE_ANON_KEY` | 클라이언트용 공개 키 |
 | `SUPABASE_SERVICE_KEY` | 서버 전용 서비스 키 (노출 금지) |
-| `ALLOWED_EMAIL` | 로그인 허용 이메일 |
-| `ALLOWED_PASSWORD` | 로그인 허용 비밀번호 |

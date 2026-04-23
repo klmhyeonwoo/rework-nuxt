@@ -54,15 +54,23 @@
 - **제약사항**: 날짜당 1개 제한(DB UNIQUE 제약으로 강제). 로그인 사용자만 쓰기 가능.
 - **엣지케이스**: 동일 날짜 `POST` 시 409 반환. `PATCH`로 수정 유도.
 
-### 5. 인증
+### 5. 프로필 (닉네임 / 소개)
+
+- **구현 방식**: Nuxt server routes → Supabase `profiles` 테이블. `user_id` PK 기반 upsert.
+- **입력**: `nickname: string`, `bio: string` (각각 optional, 하나 이상 필수)
+- **출력**: `{ user_id, nickname, bio }`
+- **제약사항**: 쓰기는 로그인 필요. 조회(`GET /api/:uid/profile`)는 인증 불필요.
+- **엣지케이스**: 프로필 미설정 사용자는 `nickname`, `bio` 모두 `null` 반환.
+
+### 6. 인증
 
 - **구현 방식**: Supabase Auth Email/Password. 서버 미들웨어에서 세션 검증.
-- **허용 계정**: 환경변수 `ALLOWED_EMAIL` / `ALLOWED_PASSWORD`로 단일 계정 제어. 로그인 시도 시 이메일이 `ALLOWED_EMAIL`과 불일치하면 401 반환.
-- **조회 허용**: `todos`, `diaries`, `heatmap` GET은 인증 불필요(Supabase RLS `SELECT` 공개).
-- **쓰기 제한**: `INSERT / UPDATE / DELETE`는 RLS로 `auth.uid() IS NOT NULL` 조건 부여.
+- **계정 관리**: Supabase 콘솔에서 직접 계정 생성. 별도 가입 API 없음.
+- **조회 허용**: `/:uid/todos`, `/:uid/diaries`, `/:uid/heatmap` GET은 인증 불필요. URL의 UID로 데이터를 특정한다.
+- **쓰기 제한**: `INSERT / UPDATE / DELETE`는 로그인 필요. 본인 `user_id` 데이터만 수정 가능.
 - **엣지케이스**: 세션 만료 시 401 반환 → 클라이언트에서 재로그인 유도.
 
-### 6. 디자인 토큰 (SCSS)
+### 7. 디자인 토큰 (SCSS)
 
 - **구현 방식**: `assets/styles/_tokens.scss` — 전역 SCSS 변수 및 CSS Custom Properties 정의.
 - **제공 토큰**:
@@ -96,19 +104,23 @@
 
 | Method | Path | 인증 | 설명 |
 |--------|------|------|------|
-| GET | `/api/todos?date=YYYY-MM-DD` | 불필요 | 날짜별 투두 목록 + 달성률 반환 |
+| GET | `/api/:uid/todos?date=YYYY-MM-DD` | 불필요 | 사용자 UID 기준 날짜별 투두 목록 + 달성률 반환 |
 | POST | `/api/todos` | 필요 | 투두 생성 |
 | PATCH | `/api/todos/:id` | 필요 | 완료 상태 토글 / 제목 수정 |
 | DELETE | `/api/todos/:id` | 필요 | 투두 삭제 |
-| GET | `/api/heatmap?year=YYYY` | 불필요 | 연간 날짜별 달성률 맵 반환 |
-| GET | `/api/heatmap?year=YYYY&month=MM` | 불필요 | 월간 날짜별 달성률 맵 반환 |
-| GET | `/api/diaries?date=YYYY-MM-DD` | 불필요 | 날짜별 일기 조회 |
+| GET | `/api/:uid/heatmap?year=YYYY` | 불필요 | 사용자 UID 기준 연간 날짜별 달성률 맵 반환 |
+| GET | `/api/:uid/heatmap?year=YYYY&month=MM` | 불필요 | 사용자 UID 기준 월간 날짜별 달성률 맵 반환 |
+| GET | `/api/:uid/diaries?date=YYYY-MM-DD` | 불필요 | 사용자 UID 기준 날짜별 일기 조회 |
 | POST | `/api/diaries` | 필요 | 일기 생성 |
 | PATCH | `/api/diaries/:id` | 필요 | 일기 수정 |
 | DELETE | `/api/diaries/:id` | 필요 | 일기 삭제 |
-| POST | `/api/auth/login` | 불필요 | 로그인 (환경변수 계정 검증) |
+| POST | `/api/auth/login` | 불필요 | 로그인 |
 | POST | `/api/auth/logout` | 필요 | 로그아웃 |
-| GET | `/api/auth/me` | 필요 | 세션 사용자 정보 반환 |
+| GET | `/api/auth/me` | 필요 | 세션 사용자 정보 반환 (`avatar_url`, `nickname`, `bio` 포함) |
+| POST | `/api/auth/avatar` | 필요 | 프로필 이미지 업로드 (multipart/form-data) |
+| DELETE | `/api/auth/avatar` | 필요 | 프로필 이미지 삭제 |
+| PATCH | `/api/auth/profile` | 필요 | 닉네임 / 소개 수정 (upsert) |
+| GET | `/api/:uid/profile` | 불필요 | 사용자 UID 기준 프로필 공개 조회 |
 
 ### 응답 예시
 
@@ -163,6 +175,14 @@ diaries {
   UNIQUE(user_id, date)
 }
 
+profiles {
+  user_id:    uuid    PK, FK → auth.users.id
+  nickname:   text    NULL
+  bio:        text    NULL
+  created_at: timestamptz   DEFAULT now()
+  updated_at: timestamptz   DEFAULT now()
+}
+
 -- achievement_rate는 todos에서 집계, 별도 저장 없음
 -- heatmap API는 todos를 date로 GROUP BY하여 계산
 ```
@@ -181,6 +201,11 @@ CREATE POLICY "diaries_select_public" ON diaries FOR SELECT USING (true);
 CREATE POLICY "diaries_insert_auth"   ON diaries FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 CREATE POLICY "diaries_update_auth"   ON diaries FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "diaries_delete_auth"   ON diaries FOR DELETE USING (auth.uid() = user_id);
+
+-- profiles
+CREATE POLICY "profiles_select_public" ON profiles FOR SELECT USING (true);
+CREATE POLICY "profiles_insert_auth"   ON profiles FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "profiles_update_auth"   ON profiles FOR UPDATE USING (auth.uid() = user_id);
 ```
 
 ---
@@ -188,7 +213,7 @@ CREATE POLICY "diaries_delete_auth"   ON diaries FOR DELETE USING (auth.uid() = 
 ## 비기능 요구사항
 
 - **성능**: heatmap API는 단일 쿼리(GROUP BY date)로 집계. 연간 조회 기준 응답 200ms 이내 목표.
-- **보안**: 환경변수 `ALLOWED_EMAIL` 불일치 시 로그인 거부. Supabase 서비스 키는 서버 사이드에서만 사용.
+- **보안**: Supabase Auth에서 인증 처리. 서비스 키는 서버 사이드에서만 사용.
 - **타입 안전성**: Supabase 스키마에서 `supabase gen-types`로 TypeScript 타입 자동 생성, `database.types.ts`로 관리.
 - **환경변수**:
 
@@ -197,8 +222,6 @@ CREATE POLICY "diaries_delete_auth"   ON diaries FOR DELETE USING (auth.uid() = 
   | `SUPABASE_URL` | Supabase 프로젝트 URL |
   | `SUPABASE_ANON_KEY` | 클라이언트용 공개 키 |
   | `SUPABASE_SERVICE_KEY` | 서버 전용 서비스 키 |
-  | `ALLOWED_EMAIL` | 로그인 허용 이메일 |
-  | `ALLOWED_PASSWORD` | 로그인 허용 비밀번호 |
 
 ---
 

@@ -7,7 +7,7 @@
 - **Base URL**: `/api`
 - **Content-Type**: `application/json`
 - **인증 방식**: HttpOnly 쿠키 (`sb-access-token`)
-  - `GET` 요청은 인증 불필요 (비로그인 조회 가능)
+  - `GET` 요청은 인증 불필요 (비로그인 조회 가능, UID를 URL에 포함)
   - `POST` / `PATCH` / `DELETE` 요청은 로그인 필요
 - **날짜 형식**: `YYYY-MM-DD` (e.g. `2026-04-19`)
 
@@ -66,7 +66,7 @@ POST /api/auth/login
 | 상태 코드 | 메시지 |
 |-----------|--------|
 | `400` | 이메일과 비밀번호를 입력해주세요. |
-| `401` | 허용되지 않은 계정입니다. |
+| `401` | Invalid login credentials |
 
 ---
 
@@ -98,10 +98,15 @@ GET /api/auth/me
 {
   "user": {
     "id": "uuid",
-    "email": "your@email.com"
+    "email": "your@email.com",
+    "avatar_url": "https://xxx.supabase.co/storage/v1/object/public/avatars/uuid/avatar.webp",
+    "nickname": "홍길동",
+    "bio": "안녕하세요!"
   }
 }
 ```
+
+> `avatar_url`, `nickname`, `bio`는 설정 전 `null` 반환.
 
 **Error**
 
@@ -112,13 +117,132 @@ GET /api/auth/me
 
 ---
 
+### 프로필 이미지 업로드
+
+```
+POST /api/auth/avatar
+Content-Type: multipart/form-data
+```
+
+**Form Fields**
+
+| 필드 | 필수 | 설명 |
+|------|------|------|
+| `avatar` | O | 이미지 파일 (jpeg, png, webp, gif / 최대 5MB) |
+
+**Response** `200`
+
+```json
+{
+  "avatar_url": "https://xxx.supabase.co/storage/v1/object/public/avatars/uuid/avatar.webp"
+}
+```
+
+**Error**
+
+| 상태 코드 | 메시지 |
+|-----------|--------|
+| `400` | avatar 파일이 필요합니다. |
+| `400` | jpeg, png, webp, gif만 업로드 가능합니다. |
+| `400` | 파일 크기는 5MB 이하여야 합니다. |
+| `401` | 로그인이 필요합니다. |
+
+---
+
+### 프로필 이미지 삭제
+
+```
+DELETE /api/auth/avatar
+```
+
+**Response** `200`
+
+```json
+{ "ok": true }
+```
+
+---
+
+### 프로필 수정 (닉네임 / 소개)
+
+```
+PATCH /api/auth/profile
+```
+
+**Request Body** (하나 이상 필수)
+
+```json
+{
+  "nickname": "홍길동",
+  "bio": "안녕하세요!"
+}
+```
+
+| 필드 | 필수 | 설명 |
+|------|------|------|
+| `nickname` | △ | 닉네임 (빈 문자열 불가) |
+| `bio` | △ | 소개 (빈 문자열 허용) |
+
+**Response** `200`
+
+```json
+{
+  "user_id": "uuid",
+  "nickname": "홍길동",
+  "bio": "안녕하세요!"
+}
+```
+
+**Error**
+
+| 상태 코드 | 메시지 |
+|-----------|--------|
+| `400` | nickname 또는 bio 중 하나 이상 필요합니다. |
+| `400` | nickname은 비어 있을 수 없습니다. |
+| `401` | 로그인이 필요합니다. |
+
+---
+
+### 프로필 공개 조회
+
+```
+GET /api/:uid/profile
+```
+
+**Path Parameters**
+
+| 파라미터 | 설명 |
+|----------|------|
+| `uid` | 조회할 사용자의 Supabase UID |
+
+**Response** `200`
+
+```json
+{
+  "user_id": "uuid",
+  "avatar_url": "https://xxx.supabase.co/storage/v1/object/public/avatars/uuid/avatar.webp",
+  "nickname": "홍길동",
+  "bio": "안녕하세요!"
+}
+```
+
+> 프로필을 설정하지 않은 필드는 `null` 반환.
+
+---
+
 ## 투두 (Todos)
 
 ### 날짜별 투두 목록 조회
 
 ```
-GET /api/todos?date={YYYY-MM-DD}
+GET /api/:uid/todos?date={YYYY-MM-DD}
 ```
+
+**Path Parameters**
+
+| 파라미터 | 설명 |
+|----------|------|
+| `uid` | 조회할 사용자의 Supabase UID |
 
 **Query Parameters**
 
@@ -230,9 +354,15 @@ DELETE /api/todos/:id
 ### 연간 / 월간 달성률 조회
 
 ```
-GET /api/heatmap?year={YYYY}
-GET /api/heatmap?year={YYYY}&month={MM}
+GET /api/:uid/heatmap?year={YYYY}
+GET /api/:uid/heatmap?year={YYYY}&month={MM}
 ```
+
+**Path Parameters**
+
+| 파라미터 | 설명 |
+|----------|------|
+| `uid` | 조회할 사용자의 Supabase UID |
 
 **Query Parameters**
 
@@ -275,8 +405,14 @@ GET /api/heatmap?year={YYYY}&month={MM}
 ### 날짜별 일기 조회
 
 ```
-GET /api/diaries?date={YYYY-MM-DD}
+GET /api/:uid/diaries?date={YYYY-MM-DD}
 ```
+
+**Path Parameters**
+
+| 파라미터 | 설명 |
+|----------|------|
+| `uid` | 조회할 사용자의 Supabase UID |
 
 **Response** `200`
 
@@ -359,13 +495,13 @@ DELETE /api/diaries/:id
 
 ```ts
 // 로그인
-await $fetch('/api/auth/login', {
+const { user } = await $fetch('/api/auth/login', {
   method: 'POST',
   body: { email: 'your@email.com', password: 'password' },
 })
 
-// 오늘의 투두 조회
-const { todos, achievement_rate } = await $fetch('/api/todos', {
+// 해당 사용자의 투두 조회
+const { todos, achievement_rate } = await $fetch(`/api/${user.id}/todos`, {
   query: { date: '2026-04-19' },
 })
 ```
@@ -374,10 +510,11 @@ const { todos, achievement_rate } = await $fetch('/api/todos', {
 
 ```vue
 <script setup lang="ts">
+const uid = 'user-uuid-here'
 const { data, fetch } = useHeatmap()
 
-onMounted(() => fetch(2026))        // 연간
-// onMounted(() => fetch(2026, 4))  // 월간
+onMounted(() => fetch(uid, 2026))        // 연간
+// onMounted(() => fetch(uid, 2026, 4))  // 월간
 </script>
 
 <template>
