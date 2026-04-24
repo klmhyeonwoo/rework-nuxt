@@ -8,12 +8,8 @@
           :name="profile.nickname"
           :description="profile.bio"
         />
-        <button
-          v-if="isOwner"
-          class="logout-button"
-          @click="handleLogout"
-        >
-          로그아웃
+        <button @click="sideButtonConfig.event">
+          {{ sideButtonConfig.label }}
         </button>
       </aside>
 
@@ -73,7 +69,7 @@ const heatmap = useHeatmap();
 const route = useRoute();
 const uid = route.params.uid as string;
 
-const isOwner = computed(() => auth.user?.id === uid)
+const isOwner = computed(() => auth.user?.id === uid);
 const currentYear = new Date().getFullYear();
 const now = new Date();
 const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
@@ -103,6 +99,20 @@ await Promise.allSettled([
 
 const { data: profile } = await useFetch<Profile>(() => `/api/${uid}/profile`);
 
+const sideButtonConfig = computed(() => {
+  if (isOwner.value) {
+    return {
+      event: handleLogout,
+      label: "로그아웃",
+    };
+  } else {
+    return {
+      event: () => navigateTo(path.home()),
+      label: "홈으로",
+    };
+  }
+});
+
 watch(
   () => todoStore.lastSyncedAt,
   () => {
@@ -130,21 +140,6 @@ watch(
   flex-shrink: 0;
   width: 180px;
   margin: 0 auto;
-
-  .logout-button {
-    padding: 8px 16px;
-    background: none;
-    border: 1px solid var(--color-border, #e0e0e0);
-    border-radius: 6px;
-    font-size: 13px;
-    cursor: pointer;
-    color: var(--color-text-muted, #888);
-
-    &:hover {
-      border-color: var(--color-primary, #222);
-      color: var(--color-primary, #222);
-    }
-  }
 }
 
 .content {

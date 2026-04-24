@@ -230,6 +230,48 @@ GET /api/:uid/profile
 
 ---
 
+## 사용자 목록 (Users)
+
+### 가입된 사용자 목록 조회
+
+```
+GET /api/users
+```
+
+인증 불필요. 프로필을 등록한 사용자 목록을 최신 가입 순으로 반환합니다.
+
+**Query Parameters**
+
+| 파라미터 | 필수 | 설명 |
+|----------|------|------|
+| `page` | X | 페이지 번호 (기본값: `1`) |
+| `limit` | X | 페이지 크기 (기본값: `20`, 최대 `50`) |
+
+**Response** `200`
+
+```json
+{
+  "users": [
+    {
+      "user_id": "uuid",
+      "nickname": "홍길동",
+      "bio": "안녕하세요!",
+      "avatar_url": "https://xxx.supabase.co/storage/v1/object/public/avatars/uuid/avatar.webp"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 42,
+    "total_pages": 3
+  }
+}
+```
+
+> 프로필을 설정하지 않은 필드는 `null` 반환.
+
+---
+
 ## 투두 (Todos)
 
 ### 날짜별 투두 목록 조회

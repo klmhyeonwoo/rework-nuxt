@@ -1,21 +1,87 @@
 <template>
   <div>
     <div class="main">
-      <span> 오늘 하루도 멋진 당신을 위해 </span>
-      <NuxtLink :href="path.login()"> 우리, 행복합시다. </NuxtLink>
+      <div class="introduce">
+        <span> 오늘 하루도 멋진 당신을 위해 </span>
+        <NuxtLink :href="path.login()"> 우리, 행복합시다. </NuxtLink>
+      </div>
+      <div class="user-list-container" v-if="users">
+        <span class="title"> 멋진 일상들이 오고가고 있어요</span>
+        <div class="users">
+          <NuxtLink
+            v-for="user in users"
+            :key="user['user_id']"
+            :href="path.user(user.user_id)"
+          >
+            {{ user.nickname }}님의 일상
+          </NuxtLink>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import path from "~/constants/path";
+
+interface User {
+  user_id: string;
+  email: string;
+  avatar_url: string | null;
+  nickname: string | null;
+  bio: string | null;
+}
+
+type UsersResponse = {
+  users: User[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+  };
+};
+
+const { data: users } = await useAsyncData(
+  "users",
+  () => $fetch<UsersResponse>("/api/users"),
+  {
+    transform: (res) => res.users,
+  },
+);
+console.log(users);
 </script>
 
 <style scoped lang="scss">
 .main {
   display: flex;
+  flex-direction: column;
   gap: 40px;
   align-items: flex-start;
+
+  .introduce {
+    display: flex;
+    flex-direction: column;
+    row-gap: 15px;
+  }
+
+  .user-list-container {
+    display: flex;
+    flex-direction: column;
+    row-gap: 20px;
+    margin-top: 120px;
+
+    .title {
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    .users {
+      display: flex;
+      flex-direction: column;
+      row-gap: 15px;
+    }
+  }
 
   @media (max-width: 768px) {
     flex-direction: column;
