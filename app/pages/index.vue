@@ -49,7 +49,6 @@ const { data: users } = await useAsyncData(
     transform: (res) => res.users,
   },
 );
-console.log(users);
 </script>
 
 <style scoped lang="scss">
