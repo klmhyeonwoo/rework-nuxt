@@ -46,7 +46,7 @@ async function handleLogin() {
   try {
     await auth.login(email.value, password.value);
     const userId = auth.user!.id;
-    navigateTo(path.user(userId));
+    await navigateTo(path.user(userId));
   } catch (e: any) {
     errorMessage.value = e?.data?.message ?? "로그인에 실패했습니다.";
   } finally {
