@@ -21,7 +21,9 @@
               {{ selectedDate }} — 오늘 날짜가 아닙니다
             </span>
           </div>
-          <TodoList :is-owner="isOwner" />
+          <ClientOnly>
+            <TodoList :is-owner="isOwner" />
+          </ClientOnly>
         </section>
 
         <section class="section">
@@ -31,7 +33,9 @@
               {{ selectedDate }} — 오늘 날짜가 아닙니다
             </span>
           </div>
-          <DiaryEditor :is-owner="isOwner" />
+          <ClientOnly>
+            <DiaryEditor :is-owner="isOwner" />
+          </ClientOnly>
         </section>
 
         <section class="section">
