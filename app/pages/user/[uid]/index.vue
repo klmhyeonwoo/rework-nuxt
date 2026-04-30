@@ -90,14 +90,14 @@ const handleLogout = async () => {
   navigateTo(path.home());
 };
 
-await Promise.allSettled([
+Promise.allSettled([
   auth.fetchMe(),
   todoStore.fetchTodos({ date: today, uid }),
   diaryStore.fetchDiary({ date: today, uid }),
   heatmap.fetch({ year: currentYear, uid }),
 ]);
 
-const { data: profile } = await useFetch<Profile>(() => `/api/${uid}/profile`);
+const { data: profile } = useFetch<Profile>(() => `/api/${uid}/profile`);
 
 const sideButtonConfig = computed(() => {
   if (isOwner.value) {
