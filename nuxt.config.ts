@@ -20,5 +20,9 @@ export default defineNuxtConfig({
     },
   },
 
+  routeRules: {
+    "/user/**": { ssr: false },
+  },
+
   css: ["~/assets/styles/tokens.scss"],
 });
