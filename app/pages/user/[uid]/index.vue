@@ -8,7 +8,7 @@
           :name="profile.nickname"
           :description="profile.bio"
         />
-        <button @click="sideButtonConfig.event">
+        <button @click="sideButtonConfig.event" :disabled="isPending">
           {{ sideButtonConfig.label }}
         </button>
       </aside>
@@ -68,6 +68,7 @@ const diaryStore = useDiaryStore();
 const heatmap = useHeatmap();
 const route = useRoute();
 const uid = route.params.uid as string;
+const isPending = ref(false);
 
 const isOwner = computed(() => auth.user?.id === uid);
 const currentYear = new Date().getFullYear();
@@ -86,8 +87,15 @@ async function onSelectDate(date: string) {
 }
 
 const handleLogout = async () => {
-  await auth.logout();
-  navigateTo(path.home());
+  isPending.value = true;
+  try {
+    await auth.logout();
+    await navigateTo(path.home());
+  } catch (e: any) {
+    console.error("로그아웃에 실패했습니다.");
+  } finally {
+    isPending.value = false;
+  }
 };
 
 Promise.allSettled([
@@ -102,8 +110,8 @@ const { data: profile } = useFetch<Profile>(() => `/api/${uid}/profile`);
 const sideButtonConfig = computed(() => {
   if (isOwner.value) {
     return {
-      event: handleLogout,
-      label: "로그아웃",
+      event: isPending.value ? () => {} : handleLogout,
+      label: isPending.value ? "로그아웃 중..." : "로그아웃",
     };
   } else {
     return {
