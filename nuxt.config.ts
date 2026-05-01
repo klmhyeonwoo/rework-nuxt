@@ -21,7 +21,9 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    "/user/**": { ssr: false },
+    "/user/**": { swr: 86400 },
+    "/": { prerender: true },
+    "/login": { prerender: true },
   },
 
   css: ["~/assets/styles/tokens.scss"],
