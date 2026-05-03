@@ -2,6 +2,7 @@
   <div class="diary-editor">
     <CircleLoading v-if="store.isLoading.read" />
     <textarea
+      v-else
       v-model="content"
       class="textarea"
       placeholder="오늘 하루를 기록하세요"
@@ -49,7 +50,7 @@ watch(
 );
 
 async function handleSave() {
-  if (!content.value.trim()) return;
+  if (!content.value?.trim()) return;
   await store.saveDiary(content.value);
   isEditing.value = false;
 }

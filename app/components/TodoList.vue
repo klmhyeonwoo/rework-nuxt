@@ -1,6 +1,5 @@
 <template>
   <div class="todo-list">
-    <CircleLoading v-if="store.isLoading.read" />
     <div class="input-row" v-if="isOwner">
       <input
         v-model="inputValue"
@@ -22,7 +21,8 @@
       달성률 {{ store.achievementRate }}%
     </div>
 
-    <ul class="list">
+    <CircleLoading v-if="store.isLoading.read" />
+    <ul class="list" v-else>
       <li v-for="todo in store.todos" :key="todo.id" class="list-item">
         <label class="check-label">
           <input
