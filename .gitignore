@@ -20,5 +20,13 @@ logs
 
 # Local env files
 .env
+.env
+.env.me
+.env.local
 .env.*
 !.env.example
+
+.env*
+.flaskenv*
+!.env.project
+!.env.vault
